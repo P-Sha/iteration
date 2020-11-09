@@ -52,11 +52,11 @@ Updating function so it works on valid inputs only.
 ```{r}
 z_scores = function(x){
   
-  if (!is.numeric(x)){              # if x-input is not numeric, stop
+  if (!is.numeric(x)) {              # if x-input is not numeric, stop
     stop("input must be numeric")
   }
   
-  if (length(x) < 3){              # input should have alteast 3-values, if not, stop.
+  if (length(x) < 3) {              # input should have alteast 3-values, if not, stop.
     stop("input must have atleast 3 numbers")
   }
   
@@ -67,6 +67,83 @@ z_scores = function(x){
 }
 
 z_scores(x_vec)    
+```
+
+## Trying a more complex function: Multiple outputs (want to calculate mean & sd too)
+
+```{r}
+mean_and_sd = function(x){
+  
+  if (!is.numeric(x)) {             
+    stop("input must be numeric")
+  }
+  
+  if (length(x) < 3) {             
+    stop("input must have atleast 3 numbers")
+  }
+  
+  mean_x = mean(x)     # find mean of x
+  sd_x = sd(x)         # fidn sd of x   
+  
+  tibble(               # organize outputs in a table. Could have used "list" too.  
+    mean = mean_x,
+    sd = sd_x
+  )
+  
+}
+```
+
+Check that the function works.
+
+```{r}
+mean_and_sd(x_vec)    # use function mean_and_sd with input values of x-vector.
+```
+
+Checking with new x-vector
+
+```{r}
+x_vec = rnorm(1000)
+mean_and_sd(x_vec) 
+```
+
+Multiple inputs (writing a function that will ask for sample size, mean and sd)
+This is NOT a function! (function below, 2nd code)
+```{r}
+sim_data =  #create simulated dataset, that is a table, that has an x-column w/values:
+  tibble(
+    x = rnorm(n = 100, mean = 4, sd = 3)
+  )
+
+sim_data %>%   #summarize simulated dataset. Mean & sd should be close to above inputs!
+  summarize(
+    mean = mean(x),
+    sd = sd(x)
+  )
+```
+
+This Is a function(same calculatons as above using a function):
+
+```{r}
+sim_mean_sd = function(sample_size, mu, sigma) {    #input these values,from row142
+  
+  sim_data =    
+    tibble(
+      x = rnorm(n = sample_size, mean = mu, sd = sigma) #inputs plugged here, as table
+  )
+
+  sim_data %>%   
+    summarize(                            #table values used to find mean,sd of n=100 of normal distr, around given mean, sd          
+      mean = mean(x),
+      sd = sd(x)
+)
+  
+}
+
+sim_mean_sd(100, 4, 3)               # inputting values into function: row 127. Each time output will be diff, cause diff normal distr values will be generated.
+
+#OR
+sim_mean_sd(sample_size = 100, mu = 4, sigma = 3)  #name-mtching input, vs position-matching (above row 142)  
+
 ```
 
 
