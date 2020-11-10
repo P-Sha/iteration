@@ -1,0 +1,142 @@
+---
+title: "Iterantion and List Columns"
+author: "Purnima Sharma"
+date: "11/8/2020"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,          
+  out.width = "90%"     
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+options(
+  ggplot2.continuous.colour = "viridis", 
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_color_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+##Lists (you can put anything in a list)
+
+```{r}
+l = list(
+  vec_numeric = 5:8,                 #numeric vector
+  mat = matrix(1:8, 2, 4),           #2 rows by 4 col matrix of digits 1 to 8
+  vec_logical = c(TRUE, FALSE),      #logical vector
+  summary     = summary(rnorm(100))) #sample from a normal distr of size 100.
+l
+
+l$vec_numeric         #accessing object in the list, OR could use:
+l[[1]]                #1st object of the list, OR 3rd way:
+l[["vec_numeric"]]
+
+mean(l[["vec_numeric"]])   #take do operations on vectors of list
+```
+
+##"for" loops
+
+Creating a new list, list of samples from a normal distr.
+
+```{r}
+list_norms =          # list name.
+  list(
+    a = rnorm(20, 3, 1),
+    b = rnorm(30, 0, 5),
+    c = rnorm(40, 10, .2),
+    d = rnorm(20, -3, 1)
+  )
+```
+
+```{r}
+list_norms[[1]]     #output is 1st object of the list (object a).
+list_norms          # output all objects of list
+```
+
+
+#  Using mean_and_sd function from "writing_functions" module to each element of this list.
+```{r}
+mean_and_sd = function(x) {
+  
+  if (!is.numeric(x)) {
+    stop("input be numeric")
+  } else if (length(x) < 3) {
+    stop("input must have 3 numbers")
+  }
+  
+  mean_x = mean(x)
+  sd_x = sd(x)
+
+  tibble(
+    mean = mean_x, 
+    sd = sd_x
+  )
+}
+
+# applying function to each object of list.
+
+mean_and_sd(list_norms[[1]])  #getting mean and SD of 1st object, first way.
+mean_and_sd(list_norms[[2]])
+mean_and_sd(list_norms[[3]])
+mean_and_sd(list_norms[[4]])
+
+
+# 2nd way: Same process as above (lines 58-61) using "for" loop (loop approach):
+
+output = vector("list", length = 4) #create output list of vector, same length as input list. This is empty right now.
+
+for (i in 1:4) {
+  output[[i]] = mean_and_sd(list_norms[[i]])
+}
+
+
+# Or, 3rd way, using "maps" in package "purrr" - most clean (map approach):
+
+output = map(list_norms, mean_and_sd)  
+
+#first argument to map is the input list (or vector, or data frame) we want to iterate.
+#second argument is the function we want to use to each object in list.
+
+output = map(.x = list_norms, ~ mean_and_sd(.x)) 
+# does the same thing as line73, with .x as place holder.
+```
+
+example of loop versus map approach 
+```{r}
+output = vector("list", length = 4)
+
+for (i in 1:4) {
+  output[[i]] = median(list_norms[[i]])
+}
+
+output = map(list_norms, median)
+# output = map(.x = list_norms, ~ median(.x))   alternative way using place-holder.
+
+#Or, to find something else:
+output = map(list_norms, IQR)
+```
+
+# map variants
+
+```{r}
+output = map_dbl(list_norms, median)   #output will be vector of numerics, vs a list.
+output = map_dbl(list_norms, median, .id = "input") #id is input,worked same as above though
+```
+
+Making each output of mean and sd a df (tibble)
+
+```{r}
+output = map_df(list_norms, mean_and_sd)
+```
+
+
+
+

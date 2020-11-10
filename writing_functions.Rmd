@@ -142,8 +142,128 @@ sim_mean_sd = function(sample_size, mu, sigma) {    #input these values,from row
 sim_mean_sd(100, 4, 3)               # inputting values into function: row 127. Each time output will be diff, cause diff normal distr values will be generated.
 
 #OR
-sim_mean_sd(sample_size = 100, mu = 4, sigma = 3)  #name-mtching input, vs position-matching (above row 142)  
+sim_mean_sd(sample_size = 100, mu = 4, sigma = 3)  #name-matching input, vs position-matching (above row 142)  
 
+```
+
+Revisiting Napolean Dynamite ex (using functions)
+Note a function (reading info from page 1 only):
+
+```{r}
+url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=1"
+
+dynamite_html = read_html(url)
+
+review_titles = 
+  dynamite_html %>%
+  html_nodes(".a-text-bold span") %>%
+  html_text()
+
+review_stars = 
+  dynamite_html %>%
+  html_nodes("#cm_cr-review_list.review-rating") %>%
+  html_text() %>% 
+  str_extract("^\\d") %>%   #get the first digit number at the beginning of that string
+  as.numeric()
+
+review_text = 
+  dynamite_html %>%
+  html_nodes(".review-text-content span") %>%
+  html_text() %>% 
+  str_replace_all("\n", "") %>% 
+  str_trim()
+
+reviews = tibble(
+  title = review_titles,
+  stars = review_stars,
+  text = review_text
+)
+```
+
+Above code for page 1 only. To do multiple pages, use a function!
+So, modifying above code and making it generic for any url.
+
+```{r}
+
+read_page_reviews = function(url){ #read_page_reviews is a function of url: i.e input is url 
+  html = read_html(url)
+
+  review_titles = 
+    html %>%
+    html_nodes(".a-text-bold span") %>%
+    html_text()
+
+  review_stars = 
+    html %>%
+    html_nodes("#cm_cr-review_list.review-rating") %>%
+    html_text() %>% 
+    str_extract("^\\d") %>%   #get the first digit number at the beginning of that string
+    as.numeric()
+
+  review_text = 
+    html %>%
+    html_nodes(".review-text-content span") %>%
+    html_text() %>% 
+    str_replace_all("\n", "") %>% 
+    str_trim()
+
+  reviews = tibble(
+    title = review_titles,
+   # stars = review_stars,   *Not working for some reason:( running code without stars.
+    text = review_text
+    )
+  
+  reviews          # return object: will be a table of reviews
+}
+```
+
+Trying above function on page 2 of "Dynamite" url.
+
+```{r}
+dynamite_url = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber=2"
+
+read_page_reviews(dynamite_url)      #use function with this url
+```
+
+Reading a few pages of reviews of Napolean Dynamite!
+
+```{r}
+dynamite_url_base = "https://www.amazon.com/product-reviews/B00005JNBQ/ref=cm_cr_arp_d_viewopt_rvwer?ie=UTF8&reviewerType=avp_only_reviews&sortBy=recent&pageNumber="
+
+# base is up to the number we are interested in.
+
+dynamite_urls = str_c(dynamite_url_base, 1:5)    #base is pages 1 to 5, dynamite_urls will output urls of all 5 pages.
+
+# reading all page reviews 1-5 and binding them together in a table
+
+all_reviews = 
+  bind_rows(
+    read_page_reviews(dynamite_urls[1]),
+    read_page_reviews(dynamite_urls[2]),
+    read_page_reviews(dynamite_urls[3]),
+    read_page_reviews(dynamite_urls[4]),
+    read_page_reviews(dynamite_urls[5])
+  )
+```
+
+Functions as arguments.
+
+```{r}
+my_summary = function(x, sum_func) {
+  
+  sum_func(x)
+  
+}
+
+x_vec = rnorm(100, 3, 7)
+
+mean(x_vec)
+median(x_vec)
+
+my_summary(x_vec, mean)   # gives the same mean as above
+my_summary(x_vec, median)  # same median as above
+my_summary(x_vec, sd)
+my_summary(x_vec, IQR)
 ```
 
 
